@@ -1,2 +1,5 @@
 .claude-flow/
 .DS_Store
+node_modules/
+.aws-sam/
+.env
