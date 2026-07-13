@@ -310,7 +310,7 @@ function renderPipeline() {
           </div>`).join("") || '<div class="empty" style="padding:18px 0;font-size:12px">No deals</div>'}
       </div>`;
     }).join("");
-    document.getElementById("pipeCount").textContent = ROLE === "Subcontractor"
+    document.getElementById("pipeCount").textContent = ROLE === "Contributor"
       ? "Deal visibility is Lab-Leader/Admin only in this build (PRD open question: view-only access for contributors)."
       : ds.length + " deals · " + fmt$(ds.reduce((s, d) => s + d.amount, 0)) + " total across all stages · click a card to open it";
   };
@@ -403,7 +403,7 @@ function renderBench() {
   const allTags = [...new Set(BENCH.flatMap(b => b.specialties))];
   const chipRow = document.getElementById("benchChips");
   chipRow.innerHTML = '<button class="chip on" data-t="">Everyone</button>' +
-    '<button class="chip" data-t="__ll">Lab Leaders</button><button class="chip" data-t="__sc">Subcontractors</button>' +
+    '<button class="chip" data-t="__ll">Lab Leaders</button><button class="chip" data-t="__sc">Contributors</button>' +
     allTags.map(t => `<button class="chip" data-t="${t}">${t}</button>`).join("");
 
   const draw = () => {
@@ -412,7 +412,7 @@ function renderBench() {
     const list = BENCH.filter(b => {
       const p = PEOPLE[b.key];
       if (active === "__ll" && p.role !== "Lab Leader") return false;
-      if (active === "__sc" && p.role !== "Subcontractor") return false;
+      if (active === "__sc" && p.role !== "Contributor") return false;
       if (active && !active.startsWith("__") && !b.specialties.includes(active)) return false;
       return !q || p.name.toLowerCase().includes(q) || b.blurb.toLowerCase().includes(q);
     });

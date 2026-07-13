@@ -17,7 +17,7 @@ const doc = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true }
 });
 
-const ROLE_OF_GROUP = { Admin: "Admin", LabLeader: "Lab Leader", Subcontractor: "Subcontractor" };
+const ROLE_OF_GROUP = { Admin: "Admin", LabLeader: "Lab Leader", Contributor: "Contributor" };
 const STAGES = ["Lead", "Discovery", "Proposal Sent", "Negotiating", "Closed"];
 const SOURCES = ["Referral", "Inbound", "Outbound"];
 const PROPOSAL_STATUSES = ["Draft", "In Review", "Internally Approved", "Sent",
@@ -89,7 +89,7 @@ async function bootstrap(ctx) {
 }
 
 async function listScoped(ctx, pk) {
-  if (ctx.role === "Subcontractor") return resp(200, []);
+  if (ctx.role === "Contributor") return resp(200, []);
   const items = await listType(pk);
   const visible = items.filter(x => ctx.can.seesLab(x.lab));
   return resp(200, visible.map(({ pk: _, sk, ...rest }) => ({ id: sk, ...rest })));
