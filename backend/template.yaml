@@ -73,7 +73,9 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
-        AllowOrigins: ["*"]
+        AllowOrigins:
+          - https://main.d2rvkunvze2ixv.amplifyapp.com
+          - http://localhost:8761
         AllowMethods: [GET, POST, PATCH, DELETE, OPTIONS]
         AllowHeaders: [Authorization, Content-Type]
       Auth:
