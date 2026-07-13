@@ -111,6 +111,7 @@ export const handler = async event => {
       const text = response.content.find(x => x.type === "text")?.text || "{}";
       await setStatus(id, { status: "Analyzed", analysis: JSON.parse(text) });
     } catch (err) {
+      if (err.status === 401) anthropic = undefined;
       console.error(JSON.stringify({ level: "error", file: id, message: err.message, stack: err.stack }));
       await setStatus(id, { status: "Analysis failed", analysis: { docType: "File", summary: "Automatic analysis failed: " + err.message, keyPoints: [] } }).catch(() => {});
     }
