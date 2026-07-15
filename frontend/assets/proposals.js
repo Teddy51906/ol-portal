@@ -1,6 +1,7 @@
-/* OL Portal · proposals page (PRD 3.4-3.5, 3.8): structured OL template
-   editor with version snapshots, status flow, ★ Final, send-to-client link,
-   and the AI Proposal Assistant grounded in the admin-owned knowledge base. */
+/* OL Portal · proposals (PRD 3.4-3.5, 3.8). The editor is a conversation:
+   you talk to The Optimist (OL's proposal writer) and the document forms in a
+   live preview beside the chat. Every update it makes auto-saves as a new
+   version. Humans keep the controls that matter: status, ★ Final, Send. */
 
 function renderProposals() {
   const drawList = () => {
@@ -13,7 +14,7 @@ function renderProposals() {
         <td>v${p.version}${p.final ? ' <span class="badge b-approved">★ Final</span>' : ""}
           ${p.sentAt ? `<small style="display:block;color:var(--ink-mute)">sent v${p.sentVersion}</small>` : ""}</td>
         <td>${p.updated}</td>
-      </tr>`).join("") : '<tr><td colspan="6" class="empty">No proposals visible for this role. Open one from a deal or start a new one.</td></tr>';
+      </tr>`).join("") : '<tr><td colspan="6" class="empty">No proposals yet. Start one and The Optimist will build it with you.</td></tr>';
   };
 
   if (ROLE === "Admin" || ROLE === "Lab Leader") {
@@ -43,7 +44,7 @@ function openNewProposal(onDone) {
     </div>
     <div class="modal-foot">
       <button class="pill pill-outline" id="npCancel">Cancel</button>
-      <button class="pill pill-primary" id="npCreate">Create draft</button>
+      <button class="pill pill-primary" id="npCreate">Start with The Optimist</button>
     </div>`, "modal");
   back.querySelector(".x").onclick = back.querySelector("#npCancel").onclick = () => back.remove();
   back.querySelector("#npCreate").onclick = async e => {
@@ -67,39 +68,37 @@ function openProposalEditor(id, onDone) {
     ? ["Draft", "In Review", "Internally Approved", "Sent", "Customer Approved", "Customer Rejected", "Revision Requested"]
     : ["Draft", "In Review", "Sent"];
 
-  const sectionsHTML = Object.entries(SECTION_LABELS).map(([k, label]) => `
-    <label class="field f-wide">${label}
-      <textarea data-sec="${k}" rows="4" ${editable ? "" : "readonly"}
-        style="font:inherit;padding:10px 12px;border:1.5px solid #ddd7ce;border-radius:9px;resize:vertical">${p.sections?.[k] || ""}</textarea></label>`).join("");
-
-  const versionsHTML = (p.versions || []).slice().reverse().map(v =>
-    `<button class="btn-mini" data-ver="${v.v}" title="Load this snapshot into the editor (save to restore it)">v${v.v} · ${v.date} · ${PEOPLE[v.author]?.name || v.author} · ${v.status}</button>`).join(" ")
-    || '<small style="color:var(--ink-mute)">No earlier versions yet — every save creates one.</small>';
+  const versionsHTML = () => (p.versions || []).slice().reverse().slice(0, 6).map(v =>
+    `<button class="btn-mini" data-ver="${v.v}" title="Restore this snapshot (saves as a new version)">v${v.v} · ${v.date} · ${v.status}</button>`).join(" ")
+    || '<small style="color:var(--ink-mute)">Every change The Optimist makes is saved as a version.</small>';
 
   const back = overlay(`
     <div class="modal-head">
       <div><h2>${p.title}</h2>
         <small class="drawer-sub">${p.id} · deal ${p.deal} · ${LABS[p.lab]?.name || p.lab} ·
           <span class="badge ${PROPOSAL_CLASS[p.status] || "b-draft"}"><i></i>${p.status}</span>
-          v${p.version}${p.final ? " · ★ Final" : ""}</small></div>
+          <span id="peVer">v${p.version}</span>${p.final ? " · ★ Final" : ""}</small></div>
       <button class="x" aria-label="Close">×</button>
     </div>
-    ${p.decision ? `<div class="todo" style="margin-bottom:12px"><span class="dot" style="background:${p.decision.action === "approve" ? "var(--green,#3B6D11)" : "var(--red,#C0392B)"}"></span>
+    ${p.decision ? `<div class="todo" style="margin-bottom:10px"><span class="dot" style="background:${p.decision.action === "approve" ? "var(--green,#3B6D11)" : "var(--red,#C0392B)"}"></span>
       <span><b>Client ${p.decision.action === "approve" ? "approved" : p.decision.action === "reject" ? "rejected" : "requested revisions on"} v${p.decision.version}</b>
       <small>${p.decision.name ? p.decision.name + " · " : ""}${(p.decision.at || "").slice(0, 10)}${p.decision.comment ? " · “" + p.decision.comment + "”" : ""}</small></span></div>` : ""}
-    <div class="f-grid">${sectionsHTML}</div>
-    ${editable ? `
-    <div style="margin:14px 0;padding:12px;border:1.5px dashed var(--violet,#3D2FD4);border-radius:10px">
-      <b style="font-size:13px">AI Proposal Assistant</b>
-      <small style="display:block;color:var(--ink-mute);margin:2px 0 8px">Talk it through — it asks questions and writes the sections above as it learns. It never sends or finalizes; you review every word and hit Save.</small>
-      <div class="chat-log" id="peChat"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="peChatIn" placeholder="e.g. Beth Shalom needs a capital campaign, about $30k, kicking off in September…"
-          style="flex:1;padding:9px 12px;border:1.5px solid #ddd7ce;border-radius:9px;font:inherit">
-        <button class="pill pill-outline" id="peChatSend">Send</button>
+    <div class="prop-grid${editable ? "" : " solo"}">
+      ${editable ? `
+      <div class="chat-col">
+        <div class="chat-name">✦ The Optimist <small>OL's proposal writer — everything in the document is written through this conversation</small></div>
+        <div class="chat-log" id="peChat"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="peChatIn" placeholder="Tell The Optimist about this engagement…"
+            style="flex:1;padding:9px 12px;border:1.5px solid #ddd7ce;border-radius:9px;font:inherit">
+          <button class="pill pill-outline" id="peChatSend">Send</button>
+        </div>
+      </div>` : ""}
+      <div class="doc-col">
+        <div class="doc-preview" id="peDoc"></div>
+        <div style="margin-top:10px"><b style="font-size:12px">VERSIONS</b><br><span id="peVers">${versionsHTML()}</span></div>
       </div>
-    </div>` : ""}
-    <div style="margin-bottom:12px"><b style="font-size:13px">Version history</b><br>${versionsHTML}</div>
+    </div>
     <div class="modal-foot" style="flex-wrap:wrap;gap:8px">
       ${editable ? `<select id="peStatus" class="row-sel" aria-label="Status">
         ${statuses.includes(p.status) ? "" : `<option selected>${p.status}</option>`}
@@ -108,31 +107,36 @@ function openProposalEditor(id, onDone) {
       <button class="pill pill-outline" id="peSend" ${p.final ? "" : 'disabled title="Mark Final first"'}>Send to client</button>` : ""}
       <span style="flex:1"></span>
       <button class="pill pill-outline" id="peClose">Close</button>
-      ${editable ? '<button class="pill pill-primary" id="peSave">Save (new version)</button>' : ""}
     </div>
     <div id="peLink" style="display:none;margin-top:10px;padding:10px;background:#f6f3ee;border-radius:8px;font-size:13px;word-break:break-all"></div>`,
-    "modal modal-wide");
+    "modal modal-xl");
 
   const $$ = sel => back.querySelector(sel);
-  const readSections = () => Object.fromEntries(
-    [...back.querySelectorAll("[data-sec]")].map(t => [t.dataset.sec, t.value]));
+  let sections = { ...(p.sections || {}) };
   const reopen = () => { back.remove(); onDone && onDone(); openProposalEditor(id, onDone); };
+
+  const renderDoc = () => {
+    $$("#peDoc").innerHTML = Object.entries(SECTION_LABELS).map(([k, label]) => `
+      <h4>${label}</h4>
+      ${(sections[k] || "").trim()
+        ? `<div class="doc-sec">${sections[k].replace(/</g, "&lt;").replace(/\n/g, "<br>")}</div>`
+        : '<div class="doc-sec doc-empty">Not written yet</div>'}`).join("");
+  };
+  renderDoc();
 
   $$(".x").onclick = $$("#peClose").onclick = () => { back.remove(); onDone && onDone(); };
 
-  back.querySelectorAll("[data-ver]").forEach(b => b.onclick = () => {
+  back.querySelectorAll("[data-ver]").forEach(b => b.onclick = async () => {
     const snap = (p.versions || []).find(v => String(v.v) === b.dataset.ver);
-    if (!snap) return;
-    for (const t of back.querySelectorAll("[data-sec]")) t.value = snap.sections?.[t.dataset.sec] || "";
+    if (!snap || !editable) return;
+    if (!confirm(`Restore the v${snap.v} snapshot? It saves as a new version, so nothing is lost.`)) return;
+    b.disabled = true;
+    try { await saveProposalSections(id, snap.sections || {}); reopen(); }
+    catch (ex) { alert(ex.message); b.disabled = false; }
   });
 
   if (!editable) return;
 
-  $$("#peSave").onclick = async e => {
-    e.target.disabled = true;
-    try { await saveProposalSections(id, readSections()); reopen(); }
-    catch (ex) { alert(ex.message); e.target.disabled = false; }
-  };
   $$("#peStatus").onchange = async e => {
     e.target.disabled = true;
     try { await setProposalStatus(id, e.target.value); reopen(); }
@@ -154,17 +158,18 @@ function openProposalEditor(id, onDone) {
       $$("#peCopy").onclick = () => navigator.clipboard.writeText(out.url);
     } catch (ex) { alert(ex.message); e.target.disabled = false; }
   };
-  /* ---------- assistant chat (history survives editor reopen) ---------- */
+
+  /* ---------- the conversation (history survives editor reopen) ---------- */
   const chats = window._propChats = window._propChats || {};
   const chat = chats[id] = chats[id] || [{
     role: "assistant",
-    content: "Hi! Let's build this proposal together. Tell me about the engagement: who's the client, what problem are we solving for them, and roughly what should OL do?"
+    content: "Hi, I'm The Optimist — I write OL's proposals. Tell me about this engagement: who's the client, what problem are we solving for them, and roughly what should OL do? I'll build the document as we talk."
   }];
   const log = $$("#peChat");
   const drawChat = (thinking) => {
     log.innerHTML = chat.map(m =>
-      `<div class="msg ${m.role}"><span>${m.content.replace(/</g, "&lt;").replace(/\n/g, "<br>")}${m.applied ? ' <em class="applied">✦ sections updated above</em>' : ""}</span></div>`).join("") +
-      (thinking ? '<div class="msg assistant"><span class="typing">thinking…</span></div>' : "");
+      `<div class="msg ${m.role}"><span>${m.content.replace(/</g, "&lt;").replace(/\n/g, "<br>")}${m.applied ? ` <em class="applied">✦ document updated · v${m.ver} saved</em>` : ""}</span></div>`).join("") +
+      (thinking ? '<div class="msg assistant"><span class="typing">writing…</span></div>' : "");
     log.scrollTop = log.scrollHeight;
   };
   const sendChat = async () => {
@@ -176,15 +181,24 @@ function openProposalEditor(id, onDone) {
     drawChat(true);
     try {
       const out = await assistChat(id,
-        chat.map(({ role, content }) => ({ role, content })), readSections());
+        chat.map(({ role, content }) => ({ role, content })), sections);
       let applied = false;
-      for (const t of back.querySelectorAll("[data-sec]")) {
-        const v = out.sections?.[t.dataset.sec];
-        if (v && v.trim()) { t.value = v; applied = true; }
+      for (const k of Object.keys(SECTION_LABELS)) {
+        const v = out.sections?.[k];
+        if (v && v.trim()) { sections[k] = v; applied = true; }
       }
-      chat.push({ role: "assistant", content: out.reply, applied });
+      let ver;
+      if (applied) {
+        const saved = await saveProposalSections(id, sections);
+        p.versions = saved.versions; p.version = saved.version; p.updated = saved.updated;
+        ver = saved.version;
+        $$("#peVer").textContent = "v" + ver;
+        $$("#peVers").innerHTML = versionsHTML();
+        renderDoc();
+      }
+      chat.push({ role: "assistant", content: out.reply, applied, ver });
     } catch (ex) {
-      chat.pop(); // let them retry the same message
+      chat.pop();
       input.value = text;
       alert(ex.message);
     }
@@ -195,4 +209,5 @@ function openProposalEditor(id, onDone) {
   $$("#peChatSend").onclick = sendChat;
   $$("#peChatIn").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
   drawChat();
+  $$("#peChatIn").focus();
 }

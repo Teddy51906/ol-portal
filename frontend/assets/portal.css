@@ -305,3 +305,19 @@ td .who small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-mut
 .chat-log .msg.user span{background:var(--violet,#3D2FD4);color:#fff;border-bottom-right-radius:4px}
 .chat-log .applied{display:block;font-style:normal;font-size:11.5px;margin-top:4px;color:var(--green,#3B6D11)}
 .chat-log .typing{color:var(--ink-mute);font-style:italic}
+
+/* The Optimist: chat-first proposal editor */
+.modal-xl{max-width:1080px;width:min(1080px,96vw)}
+.prop-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;margin:6px 0 14px}
+.prop-grid.solo{grid-template-columns:1fr}
+.chat-col{display:flex;flex-direction:column;border:1.5px dashed var(--violet,#3D2FD4);border-radius:12px;padding:12px}
+.chat-name{font-weight:700;font-size:13px;margin-bottom:8px}
+.chat-name small{display:block;font-weight:400;color:var(--ink-mute)}
+.chat-col .chat-log{flex:1;max-height:52vh;min-height:280px}
+.doc-col{min-width:0}
+.doc-preview{border:1.5px solid #eee7dc;border-radius:12px;padding:16px 18px;max-height:52vh;min-height:280px;overflow-y:auto;background:#fffdf9}
+.doc-preview h4{font:600 11px Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--violet,#3D2FD4);margin:14px 0 4px}
+.doc-preview h4:first-child{margin-top:0}
+.doc-sec{font-size:13.5px;line-height:1.6}
+.doc-empty{color:var(--ink-mute);font-style:italic}
+@media (max-width:900px){.prop-grid{grid-template-columns:1fr}}
