@@ -205,9 +205,12 @@ Resources:
           Properties:
             Schedule: cron(15 6 * * ? *)
 
-  # Renders a contract to PDF and stores it as a FILE record (PRD 3.6 follow-on).
+  # Renders a contract OR a live proposal draft to PDF and stores it as a FILE
+  # record (PRD 3.6 follow-on + The Optimist's "Draft PDF" action). Logical
+  # id/FunctionName kept as "ContractPdf" to avoid an unnecessary Lambda
+  # replacement now that it serves both — see backend/src/pdf/index.mjs.
   # Own CodeUri (src/pdf/) so puppeteer-core + @sparticuz/chromium don't bloat
-  # every other function's bundle — see backend/src/pdf/index.mjs.
+  # every other function's bundle.
   ContractPdfFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -234,6 +237,12 @@ Resources:
           Properties:
             ApiId: !Ref PortalApi
             Path: /contracts/{id}/pdf
+            Method: POST
+        ProposalPdfRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PortalApi
+            Path: /proposals/{id}/pdf
             Method: POST
 
   ApiFunction:

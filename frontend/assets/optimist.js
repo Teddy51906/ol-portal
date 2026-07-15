@@ -46,7 +46,7 @@ function renderOptimist() {
       (thinking ? '<div class="msg assistant"><span class="typing">writing…</span></div>' : "")
       : '<div class="empty" style="margin:auto">Pick a proposal on the left, or start a new one.</div>';
     $("optLog").scrollTop = $("optLog").scrollHeight;
-    $("optIn").disabled = $("optSend").disabled = !currentId;
+    $("optIn").disabled = $("optSend").disabled = $("optDraftPdf").disabled = !currentId;
   };
 
   const drawDoc = () => {
@@ -81,6 +81,8 @@ function renderOptimist() {
         <button class="btn-mini" id="optSendClient" ${p.final ? "" : "disabled"}>Send to client</button>
       </div>
       ${versions ? `<div style="margin-top:8px"><small style="font-weight:700">VERSIONS</small> ${versions}</div>` : ""}
+      ${p.pdfFileId ? `<div style="margin-top:8px;padding:8px;background:#f6f3ee;border-radius:8px;font-size:12.5px">
+        📄 <a href="#" id="optPdfDl" style="font-weight:600;color:var(--violet)">Download the drafted PDF</a></div>` : ""}
       <div id="optLink" style="display:none;margin-top:8px;padding:8px;background:#f6f3ee;border-radius:8px;font-size:12.5px;word-break:break-all"></div>`;
 
     $("optStatus").onchange = async e => {
@@ -104,6 +106,10 @@ function renderOptimist() {
         link.innerHTML = `Client link (v${out.sentVersion} locked): <b>${out.url}</b> <button class="btn-mini" id="optCopy">Copy</button>`;
         $("optCopy").onclick = () => navigator.clipboard.writeText(out.url);
       } catch (ex) { alert(ex.message); e.target.disabled = false; }
+    };
+    if ($("optPdfDl")) $("optPdfDl").onclick = async e => {
+      e.preventDefault();
+      try { location.href = await downloadFileUrl(p.pdfFileId); } catch (ex) { alert(ex.message); }
     };
     document.querySelectorAll("#optDoc [data-ver]").forEach(b => b.onclick = async () => {
       const snap = (p.versions || []).find(v => String(v.v) === b.dataset.ver);
@@ -148,6 +154,17 @@ function renderOptimist() {
     if (!currentId) return;
     $("optIn").value = "Auto-fill the rest of the proposal from what you have so far. Make reasonable assumptions, fill every missing section, and note your key assumptions — I'll correct anything that's off.";
     sendChat();
+  };
+  // A real button rather than a chat keyword ("draft pdf" as plain text just
+  // gets sent to the LLM, which has no way to act on it) — reliable and
+  // discoverable beats teaching the assistant to detect intent from free text.
+  $("optDraftPdf").onclick = async () => {
+    if (!currentId) return;
+    const btn = $("optDraftPdf");
+    btn.disabled = true; btn.textContent = "Drafting PDF…";
+    try { await generateProposalPdf(currentId); drawDoc(); }
+    catch (ex) { alert(ex.message); }
+    btn.disabled = false; btn.textContent = "📄 Draft PDF";
   };
 
   const sendChat = async () => {

@@ -10,7 +10,10 @@ async function api(path, opts = {}) {
   });
   if (res.status === 401) { logout(); throw new Error("Signed out"); }
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || res.statusText);
+  // res.statusText is empty for HTTP/2 responses (what API Gateway serves) in
+  // Chrome, so a gateway-level failure (e.g. a Lambda timeout) with no JSON
+  // body used to surface as a blank alert() — always fall back to something legible.
+  if (!res.ok) throw new Error(data.error || res.statusText || `Request failed (${res.status})`);
   return data;
 }
 
@@ -177,6 +180,12 @@ async function generateContractPdf(id) {
   const out = await api(`/contracts/${id}/pdf`, { method: "POST" });
   const c = CONTRACTS.find(x => x.id === id);
   if (c) c.pdfFileId = out.fileId;
+  return out;
+}
+async function generateProposalPdf(id) {
+  const out = await api(`/proposals/${id}/pdf`, { method: "POST" });
+  const p = PROPOSALS.find(x => x.id === id);
+  if (p) p.pdfFileId = out.fileId;
   return out;
 }
 async function inviteContributor(fields) {
