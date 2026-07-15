@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>The Optimist · Optimistic Labs Portal</title>
+<link rel="icon" href="assets/ol-mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main class="content" id="optWrap">
+      <div class="opt-app">
+        <div class="opt-rail">
+          <button class="pill pill-primary" id="optNew" style="width:100%;margin-bottom:12px">+ New proposal</button>
+          <div id="optList"></div>
+        </div>
+        <div class="opt-chat">
+          <div class="chat-name" id="optChatHead">✦ The Optimist
+            <small>OL's proposal writer. Pick a proposal or start a new one, then just talk.</small></div>
+          <div class="chat-log" id="optLog"></div>
+          <div class="opt-inbar">
+            <input id="optIn" placeholder="Tell The Optimist about this engagement…">
+            <button class="pill pill-primary" id="optSend">Send</button>
+          </div>
+        </div>
+        <div class="opt-doc" id="optDoc"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="assets/config.js"></script>
+<script src="assets/auth.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/portal.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/optimist.js"></script>
+<script>initPage("The Optimist", renderOptimist);</script>
+</body>
+</html>
