@@ -63,64 +63,87 @@ export async function deleteKb(ctx, id) {
   return resp(200, { deleted: id });
 }
 
-/* ---------- draft assistant ---------- */
-const DRAFT_SCHEMA = {
+/* ---------- conversational draft assistant ----------
+   A chat, not a one-shot: the assistant interviews the Lab Leader (client,
+   problem, scope, budget, timing) and writes/updates the proposal sections as
+   it learns. The client sends the running conversation; every reply may carry
+   section updates (empty string = leave that section alone). */
+const CHAT_SCHEMA = {
   type: "object",
   properties: {
+    reply: {
+      type: "string",
+      description: "Your conversational message to the Lab Leader: a focused question, a short confirmation of what you drafted, or advice. Keep it under 120 words."
+    },
     sections: {
       type: "object",
-      properties: Object.fromEntries(SECTION_KEYS.map(k => [k, { type: "string" }])),
+      properties: Object.fromEntries(SECTION_KEYS.map(k => [k, {
+        type: "string",
+        description: "New full text for this section, or an empty string to leave it unchanged"
+      }])),
       required: SECTION_KEYS,
       additionalProperties: false
-    },
-    note: { type: "string", description: "One or two sentences to the Lab Leader: assumptions made, what to verify before sending" }
+    }
   },
-  required: ["sections", "note"],
+  required: ["reply", "sections"],
   additionalProperties: false
 };
 
+const MAX_TURNS = 30;
+const MAX_MSG_CHARS = 4000;
+
 export async function assist(ctx, body) {
-  const { proposalId, guidance } = body || {};
+  const { proposalId, messages, draft } = body || {};
   const p = await get("PROPOSAL", proposalId);
   if (!p) return resp(404, { error: "proposal not found" });
   if (!ctx.can.editProposal(p)) return resp(403, { error: "Not allowed to edit this proposal" });
+  if (!Array.isArray(messages) || !messages.length) return resp(400, { error: "messages are required" });
+  const turns = messages.slice(-MAX_TURNS).map(m => ({
+    role: m?.role === "assistant" ? "assistant" : "user",
+    content: String(m?.content || "").slice(0, MAX_MSG_CHARS)
+  })).filter(m => m.content.trim());
+  while (turns.length && turns[0].role !== "user") turns.shift(); // API requires a user turn first
+  if (!turns.length) return resp(400, { error: "say something first" });
 
   const [deal, kb] = await Promise.all([get("DEAL", p.deal), listType("KB")]);
   const kbText = kb.length
     ? kb.map(e => `### ${e.title}\n${e.content}`).join("\n\n")
-    : "(The knowledge base is empty — draft from general consulting best practice and say so in your note.)";
-
-  const existing = SECTION_KEYS.some(k => (p.sections?.[k] || "").trim())
-    ? `The proposal has existing draft sections — improve and complete them rather than discarding what's written:\n${JSON.stringify(p.sections)}`
-    : "The proposal sections are empty — draft all of them.";
+    : "(The knowledge base is empty — draft from general consulting best practice and say so.)";
 
   const c = await client();
   const response = await c.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 6000,
     thinking: { type: "adaptive" },
-    system: `You are Optimistic Labs' proposal assistant, embedded in their internal portal.
+    system: `You are Optimistic Labs' proposal assistant, chatting with a Lab Leader inside the proposal editor of OL's internal portal.
 Optimistic Labs is a consultancy that runs client engagements through practice "labs", each led by a Lab Leader.
-You draft and refine client proposals grounded in OL's own knowledge base below. Follow OL's pricing frameworks and tone of voice where the knowledge base defines them; do not invent OL policies that aren't there. Write in plain, confident prose. Never use em-dashes.
+
+Your job: interview them and build the proposal as you go.
+- Early in the conversation, ask focused questions, one or two at a time: who the client is, the problem, what OL will do, budget expectations, timing, constraints. Don't interrogate; if they've already said it, don't re-ask.
+- As soon as you know enough for any section, write it — update sections incrementally rather than waiting for everything. Set a section to an empty string to leave what's already there untouched.
+- When you update sections, your reply should briefly say what you drafted and ask the next most useful question.
+- Ground pricing and tone in OL's knowledge base below; do not invent OL policies that aren't there. Write sections in plain, confident prose. Never use em-dashes.
+- You draft only. You cannot send, approve, or finalize anything; the Lab Leader reviews every word.
 
 ## OL knowledge base
-${kbText}`,
-    output_config: { format: { type: "json_schema", schema: DRAFT_SCHEMA } },
-    messages: [{
-      role: "user",
-      content: `Draft the six OL proposal template sections (summary, scope, deliverables, timeline, pricing, terms) for this deal.
+${kbText}
 
-Deal context: client "${p.client}", lab "${p.lab}", deal ${p.deal}${deal ? `, value $${deal.amount}, expected close ${deal.close}, source ${deal.source}${deal.recurring ? ", recurring engagement" : ""}` : ""}.
-Proposal title: "${p.title}".
-${existing}
-${guidance ? `Lab Leader guidance for this draft: ${String(guidance).slice(0, 2000)}` : ""}`
-    }]
+## This proposal
+Title: "${p.title}" for client "${p.client}" (lab "${p.lab}", deal ${p.deal}${deal ? `, deal value $${deal.amount}, expected close ${deal.close}, source ${deal.source}${deal.recurring ? ", recurring engagement" : ""}` : ""}).
+Current section contents as they sit in the editor right now (empty means not yet written):
+${JSON.stringify(
+  typeof draft === "object" && draft !== null
+    ? Object.fromEntries(SECTION_KEYS.map(k => [k, String(draft[k] || "").slice(0, 20_000)]))
+    : p.sections || {}
+)}`,
+    output_config: { format: { type: "json_schema", schema: CHAT_SCHEMA } },
+    messages: turns
   });
 
   if (response.stop_reason === "refusal")
     return resp(502, { error: "The assistant declined to draft this content" });
   const text = response.content.find(x => x.type === "text")?.text;
-  if (!text) return resp(502, { error: "The assistant returned no draft; try again" });
-  await writeAudit(ctx.me.sk, "assist.drafted", `${proposalId} (${p.client})`);
+  if (!text) return resp(502, { error: "The assistant returned nothing; try again" });
+  await writeAudit(ctx.me.sk, "assist.chat", `${proposalId} (${p.client})`);
   return resp(200, JSON.parse(text));
 }

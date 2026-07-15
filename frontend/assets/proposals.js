@@ -91,14 +91,12 @@ function openProposalEditor(id, onDone) {
     ${editable ? `
     <div style="margin:14px 0;padding:12px;border:1.5px dashed var(--violet,#3D2FD4);border-radius:10px">
       <b style="font-size:13px">AI Proposal Assistant</b>
-      <small style="display:block;color:var(--ink-mute);margin:2px 0 8px">Drafts from OL's knowledge base and this deal's context. It never sends or finalizes — you review every word.</small>
-      <div style="display:flex;gap:8px">
-        <input id="peGuide" placeholder="Optional guidance, e.g. three-tier pricing, 8-week timeline" style="flex:1;padding:9px 12px;border:1.5px solid #ddd7ce;border-radius:9px;font:inherit">
-        <button class="pill pill-outline" id="peAssist">Draft with AI</button>
-      </div>
-      <div id="peAssistOut" style="display:none;margin-top:10px">
-        <small id="peAssistNote" style="display:block;margin-bottom:6px"></small>
-        <button class="btn-mini" id="peApply">Apply draft to editor</button>
+      <small style="display:block;color:var(--ink-mute);margin:2px 0 8px">Talk it through — it asks questions and writes the sections above as it learns. It never sends or finalizes; you review every word and hit Save.</small>
+      <div class="chat-log" id="peChat"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="peChatIn" placeholder="e.g. Beth Shalom needs a capital campaign, about $30k, kicking off in September…"
+          style="flex:1;padding:9px 12px;border:1.5px solid #ddd7ce;border-radius:9px;font:inherit">
+        <button class="pill pill-outline" id="peChatSend">Send</button>
       </div>
     </div>` : ""}
     <div style="margin-bottom:12px"><b style="font-size:13px">Version history</b><br>${versionsHTML}</div>
@@ -156,19 +154,45 @@ function openProposalEditor(id, onDone) {
       $$("#peCopy").onclick = () => navigator.clipboard.writeText(out.url);
     } catch (ex) { alert(ex.message); e.target.disabled = false; }
   };
-  $$("#peAssist").onclick = async e => {
-    e.target.disabled = true; e.target.textContent = "Drafting…";
+  /* ---------- assistant chat (history survives editor reopen) ---------- */
+  const chats = window._propChats = window._propChats || {};
+  const chat = chats[id] = chats[id] || [{
+    role: "assistant",
+    content: "Hi! Let's build this proposal together. Tell me about the engagement: who's the client, what problem are we solving for them, and roughly what should OL do?"
+  }];
+  const log = $$("#peChat");
+  const drawChat = (thinking) => {
+    log.innerHTML = chat.map(m =>
+      `<div class="msg ${m.role}"><span>${m.content.replace(/</g, "&lt;").replace(/\n/g, "<br>")}${m.applied ? ' <em class="applied">✦ sections updated above</em>' : ""}</span></div>`).join("") +
+      (thinking ? '<div class="msg assistant"><span class="typing">thinking…</span></div>' : "");
+    log.scrollTop = log.scrollHeight;
+  };
+  const sendChat = async () => {
+    const input = $$("#peChatIn"), btn = $$("#peChatSend");
+    const text = input.value.trim();
+    if (!text) return;
+    chat.push({ role: "user", content: text });
+    input.value = ""; input.disabled = btn.disabled = true;
+    drawChat(true);
     try {
-      const draft = await assistDraft(id, $$("#peGuide").value.trim());
-      back._draft = draft.sections;
-      $$("#peAssistNote").textContent = "Assistant: " + draft.note;
-      $$("#peAssistOut").style.display = "block";
-    } catch (ex) { alert(ex.message); }
-    e.target.disabled = false; e.target.textContent = "Draft with AI";
+      const out = await assistChat(id,
+        chat.map(({ role, content }) => ({ role, content })), readSections());
+      let applied = false;
+      for (const t of back.querySelectorAll("[data-sec]")) {
+        const v = out.sections?.[t.dataset.sec];
+        if (v && v.trim()) { t.value = v; applied = true; }
+      }
+      chat.push({ role: "assistant", content: out.reply, applied });
+    } catch (ex) {
+      chat.pop(); // let them retry the same message
+      input.value = text;
+      alert(ex.message);
+    }
+    input.disabled = btn.disabled = false;
+    drawChat();
+    input.focus();
   };
-  const applyBtn = $$("#peApply");
-  if (applyBtn) applyBtn.onclick = () => {
-    for (const t of back.querySelectorAll("[data-sec]"))
-      if (back._draft?.[t.dataset.sec]) t.value = back._draft[t.dataset.sec];
-  };
+  $$("#peChatSend").onclick = sendChat;
+  $$("#peChatIn").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+  drawChat();
 }

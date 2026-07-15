@@ -162,8 +162,8 @@ async function sendProposalToClient(id) {
   await refreshProposals();
   return out; // { url, sentVersion }
 }
-async function assistDraft(proposalId, guidance) {
-  return api("/assist", { method: "POST", body: { proposalId, guidance } });
+async function assistChat(proposalId, messages, draft) {
+  return api("/assist", { method: "POST", body: { proposalId, messages, draft } });
 }
 
 /* ---------- contracts ---------- */
