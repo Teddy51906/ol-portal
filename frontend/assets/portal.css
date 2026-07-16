@@ -1,7 +1,7 @@
 /* ============================================================
    OPTIMISTIC LABS PORTAL · app design system
    Separate product from the marketing site; same brand DNA.
-   Violet ramp · Anton + Playfair Display + Inter · card UI
+   Violet ramp · Inter + Playfair Display · card UI
    ============================================================ */
 :root{
   --violet-deep:#3D2FD4; --violet:#7C6DF5; --violet-light:#B0A6FA; --violet-pale:#ECEAFE;
@@ -12,7 +12,7 @@
   --red:#D94F4F; --red-pale:#FBEAEA;
   --amber:#C98A1B; --amber-pale:#FBF3E2;
   --serif:'Playfair Display',Georgia,serif;
-  --head:'Anton','Arial Narrow',Impact,sans-serif;
+  --head:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --ease:cubic-bezier(.16,1,.3,1);
   --rad:16px; --rad-sm:10px;
@@ -58,7 +58,7 @@ button{font-family:var(--sans);cursor:pointer}
 /* ---------- topbar ---------- */
 .top{height:var(--top-h);background:var(--card);border-bottom:1px solid var(--hair);
   display:flex;align-items:center;gap:16px;padding:0 32px;position:sticky;top:0;z-index:40}
-.top-title{font-family:var(--head);font-weight:400;font-size:19px;letter-spacing:.02em}
+.top-title{font-family:var(--head);font-weight:700;font-size:19px;letter-spacing:-.01em}
 .top-env{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
   color:var(--amber);background:var(--amber-pale);border-radius:999px;padding:4px 11px}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:14px}
@@ -71,7 +71,7 @@ button{font-family:var(--sans);cursor:pointer}
 
 /* ---------- headings / text ---------- */
 .page-head{margin-bottom:22px}
-.page-head h1{font-family:var(--head);font-weight:400;font-size:clamp(24px,3vw,32px);letter-spacing:.01em;line-height:1.1}
+.page-head h1{font-family:var(--head);font-weight:700;font-size:clamp(24px,3vw,32px);letter-spacing:-.01em;line-height:1.1}
 .page-head .sub{color:var(--ink-mute);font-size:14px;margin-top:5px;max-width:64ch}
 .em-italic{font-family:var(--serif);font-style:italic;font-weight:500;color:var(--violet)}
 .eyebrow{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:10.5px;
@@ -87,7 +87,7 @@ button{font-family:var(--sans);cursor:pointer}
 .card{background:var(--card);border:1px solid var(--hair);border-radius:var(--rad);
   box-shadow:var(--shadow);padding:22px}
 .card-head{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}
-.card-head h2{font-family:var(--head);font-weight:400;font-size:17px;letter-spacing:.02em}
+.card-head h2{font-family:var(--head);font-weight:700;font-size:17px;letter-spacing:-.01em}
 .card-head .more{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--violet)}
 .card-head .more:hover{color:var(--violet-deep)}
 
@@ -96,20 +96,20 @@ button{font-family:var(--sans);cursor:pointer}
   display:flex;align-items:center;gap:24px;position:relative;overflow:hidden}
 .banner::after{content:"";position:absolute;right:-70px;top:-70px;width:260px;height:260px;border-radius:50%;
   border:1.5px solid rgba(255,255,255,.14);box-shadow:0 0 0 44px rgba(255,255,255,.05),0 0 0 92px rgba(255,255,255,.03)}
-.banner h1{font-family:var(--head);font-weight:400;font-size:clamp(22px,2.6vw,30px);line-height:1.12}
+.banner h1{font-family:var(--head);font-weight:700;font-size:clamp(22px,2.6vw,30px);line-height:1.12}
 .banner .em-italic{color:var(--violet-light)}
 .banner p{color:rgba(255,255,255,.78);font-size:13.5px;margin-top:6px;max-width:52ch}
 .banner-stats{margin-left:auto;display:flex;gap:12px;position:relative;z-index:1}
 .banner-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:12px;
   padding:12px 20px;text-align:center;min-width:110px}
-.banner-chip b{display:block;font-family:var(--head);font-weight:400;font-size:24px;letter-spacing:.02em}
+.banner-chip b{display:block;font-family:var(--head);font-weight:700;font-size:24px;letter-spacing:-.01em}
 .banner-chip span{font-size:11px;color:rgba(255,255,255,.72)}
 
 /* ---------- stat cards ---------- */
 .stat{display:flex;flex-direction:column;gap:8px}
 .stat .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .stat .ic svg{width:20px;height:20px}
-.stat .num{font-family:var(--head);font-weight:400;font-size:28px;letter-spacing:.02em;line-height:1}
+.stat .num{font-family:var(--head);font-weight:700;font-size:28px;letter-spacing:-.01em;line-height:1}
 .stat .lbl{font-size:12.5px;color:var(--ink-mute)}
 .delta{font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;display:inline-block}
 .delta.up{color:var(--green);background:var(--green-pale)}
@@ -133,7 +133,7 @@ button{font-family:var(--sans);cursor:pointer}
 .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-soft)}
 .legend i{width:10px;height:10px;border-radius:3px;flex:none}
 .donut-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
-.donut-num{font-family:var(--head);font-weight:400;font-size:26px}
+.donut-num{font-family:var(--head);font-weight:700;font-size:26px}
 .donut-sub{font-size:12px;color:var(--ink-mute)}
 
 /* ---------- tables ---------- */
@@ -200,7 +200,7 @@ td .who small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-mut
 .deal:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(61,47,212,.1)}
 .deal b{font-size:13.5px;font-weight:600;display:block;line-height:1.35}
 .deal .meta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--ink-mute)}
-.deal .amt{font-family:var(--head);font-weight:400;font-size:16px;margin-top:8px;letter-spacing:.02em}
+.deal .amt{font-family:var(--head);font-weight:700;font-size:16px;margin-top:8px;letter-spacing:-.01em}
 .deal .foot{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;
   border-top:1px dashed rgba(124,109,245,.18);font-size:11px;color:var(--ink-mute)}
 .deal .foot img{width:20px;height:20px;border-radius:50%;object-fit:cover}
@@ -244,7 +244,7 @@ td .who small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-mut
 .modal{background:var(--card);border-radius:var(--rad);box-shadow:0 24px 80px rgba(17,17,17,.28);
   width:100%;max-width:640px;padding:26px 28px}
 .modal-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px}
-.modal-head h2{font-family:var(--head);font-weight:400;font-size:21px;letter-spacing:.01em}
+.modal-head h2{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:-.01em}
 .drawer-sub{font-size:12px;color:var(--ink-mute)}
 .modal-head .x{margin-left:auto;background:none;border:none;font-size:26px;line-height:1;
   color:var(--warm-gray);padding:2px 8px;border-radius:8px}
@@ -260,7 +260,7 @@ td .who small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-mut
 .f-wide{grid-column:1/-1}
 .f-check{grid-column:1/-1;flex-direction:row;align-items:center;gap:10px;font-weight:500;font-size:13px}
 .f-check input{width:16px;height:16px;accent-color:var(--violet-deep)}
-.f-grid.readonly .field b{font-family:var(--head);font-weight:400;font-size:17px;letter-spacing:.02em}
+.f-grid.readonly .field b{font-family:var(--head);font-weight:700;font-size:17px;letter-spacing:-.01em}
 .pill-danger{background:var(--red-pale);color:var(--red)}
 .pill-danger:hover{background:var(--red);color:#fff}
 .btn-mini{font-size:11px;font-weight:600;color:var(--violet-deep);background:var(--violet-pale);

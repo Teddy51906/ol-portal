@@ -151,7 +151,7 @@ function renderDashboard() {
   document.getElementById("labDonut").innerHTML = `
     <div class="donut-wrap">
       <svg width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Open pipeline by lab">
-        ${segs}<text x="60" y="57" text-anchor="middle" font-family="Anton" font-size="17" fill="#111">${fmtK(total)}</text>
+        ${segs}<text x="60" y="57" text-anchor="middle" font-family="Inter" font-weight="700" font-size="17" fill="#111">${fmtK(total)}</text>
         <text x="60" y="73" text-anchor="middle" font-family="Inter" font-size="7.5" fill="#9E9589">OPEN PIPELINE</text>
       </svg>
       <div class="legend">${byLab.map(x =>
