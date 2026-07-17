@@ -528,86 +528,112 @@ a:hover { text-decoration-thickness: 2px; }
 .linklist a:hover { transform: translateY(-2px); }
 .linklist a.is-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* ---------- Client logo wall (3D carousel, from the Client Logo Wall design) ---------- */
+/* ---------- Logo marquee along an SVG path ----------
+   Vanilla port of 21st.dev's MarqueeAlongSvgPath: each item follows the
+   path via offset-path/offset-distance with staggered negative delays;
+   the fixed-size canvas scales to the viewport like the component's
+   `responsive` mode. Wrap-around happens off-canvas, so it loops
+   seamlessly. Falls back to a flat strip marquee on small screens or
+   where offset-path is unsupported, and to a static grid under
+   prefers-reduced-motion. */
 
-.logo-wall {
-  --lw-radius: 701px;
-  --lw-card-w: 320px;
-  --lw-card-h: 200px;
+.logo-marquee {
+  --lm-dur: 44s;
+  --lm-n: 14;
   text-align: center;
   overflow: hidden;
 }
-.logo-wall h2 { margin-bottom: 0.75rem; }
-.logo-stage {
-  width: 100%;
-  height: 300px;
-  perspective: 1400px;
-  perspective-origin: 50% 50%;
+.logo-marquee h2 { margin-bottom: 0.5rem; }
+
+.lm-viewport {
   position: relative;
+  width: 100%;
+  overflow: hidden;
 }
-.logo-ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform-style: preserve-3d;
-  animation: lw-spin 70s linear infinite;
+.lm-canvas {
+  position: relative;
+  width: 1200px;
+  height: 300px;
+  transform-origin: top left;
 }
-.logo-card {
+.lm-path-svg {
   position: absolute;
-  left: calc(var(--lw-card-w) / -2);
-  top: calc(var(--lw-card-h) / -2);
-  width: var(--lw-card-w);
-  height: var(--lw-card-h);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.lm-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 118px;
+  height: 66px;
   display: flex;
   align-items: center;
   justify-content: center;
-  backface-visibility: hidden;
-  transform: rotateY(var(--ry)) translateZ(var(--lw-radius));
+  offset-path: path("M -80 220 C 240 80, 500 80, 720 160 C 900 224, 1080 170, 1280 100");
+  offset-rotate: 0deg;
+  animation: lm-travel var(--lm-dur) linear infinite;
+  animation-delay: calc(var(--i) / var(--lm-n) * var(--lm-dur) * -1);
 }
-.logo-card img {
-  max-width: 62%;
-  max-height: 54%;
+@keyframes lm-travel {
+  from { offset-distance: 0%; }
+  to { offset-distance: 100%; }
+}
+
+/* Muted at rest, full strength on hover */
+.lm-item img,
+.lm-track img {
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.35));
-  animation: lw-bob 2.6s ease-in-out var(--bob-delay, 0s) infinite alternate;
+  filter: grayscale(1) opacity(0.55);
+  transition: filter 0.3s ease;
 }
-/* edge fades so cards enter and leave softly (same navy as the band) */
-.logo-stage::before,
-.logo-stage::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 16%;
-  z-index: 2;
-  pointer-events: none;
+.lm-item img:hover,
+.lm-track img:hover { filter: grayscale(0) opacity(1); }
+
+/* Pause the flow while inspecting a logo */
+.logo-marquee:hover .lm-item,
+.logo-marquee:hover .lm-track { animation-play-state: paused; }
+
+.lm-link { margin: 1.25rem 0 0; }
+
+/* Flat strip fallback (mobile / no offset-path support) */
+.lm-strip { display: none; overflow: hidden; }
+.lm-track {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  width: max-content;
+  padding: 1.5rem 0;
+  animation: lm-scroll 32s linear infinite;
 }
-.logo-stage::before { left: 0; background: linear-gradient(90deg, var(--dark), rgba(21, 44, 66, 0)); }
-.logo-stage::after { right: 0; background: linear-gradient(270deg, var(--dark), rgba(21, 44, 66, 0)); }
+.lm-track img { height: 44px; width: auto; max-width: 130px; }
+@keyframes lm-scroll { to { transform: translateX(-50%); } }
 
-@keyframes lw-spin { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
-@keyframes lw-bob { from { transform: translateY(-7px); } to { transform: translateY(7px); } }
-
-@media (max-width: 52rem) {
-  .logo-wall { --lw-radius: 430px; --lw-card-w: 200px; --lw-card-h: 130px; }
-  .logo-stage { height: 220px; }
+@media (max-width: 40rem) {
+  .lm-viewport { display: none; }
+  .lm-strip { display: block; }
+}
+@supports not (offset-path: path("M 0 0 L 10 10")) {
+  .lm-viewport { display: none; }
+  .lm-strip { display: block; }
 }
 
-/* Reduced motion: a still, wrapped grid of the same logos */
+/* Reduced motion: everything stops; logos become a still, wrapped grid */
 @media (prefers-reduced-motion: reduce) {
-  .logo-stage { height: auto; perspective: none; padding: 1rem 0; }
-  .logo-stage::before, .logo-stage::after { display: none; }
-  .logo-ring {
-    position: static;
+  .lm-viewport { display: none; }
+  .lm-strip { display: block; }
+  .lm-track {
     animation: none;
-    transform: none;
-    display: flex;
+    width: auto;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1.5rem 2.5rem;
   }
-  .logo-card { position: static; transform: none; width: 9rem; height: 4.5rem; }
-  .logo-card img { animation: none; max-width: 100%; max-height: 100%; }
+  .lm-track .lm-dup { display: none; }
+  .lm-track img { filter: grayscale(0) opacity(0.85); }
 }
 
 /* ---------- Footer ---------- */
