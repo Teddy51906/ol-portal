@@ -512,6 +512,88 @@ a:hover { text-decoration-thickness: 2px; }
 .linklist a:hover { transform: translateY(-2px); }
 .linklist a.is-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+/* ---------- Client logo wall (3D carousel, from the Client Logo Wall design) ---------- */
+
+.logo-wall {
+  --lw-radius: 701px;
+  --lw-card-w: 320px;
+  --lw-card-h: 200px;
+  text-align: center;
+  overflow: hidden;
+}
+.logo-wall h2 { margin-bottom: 0.75rem; }
+.logo-stage {
+  width: 100%;
+  height: 300px;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  position: relative;
+}
+.logo-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+  animation: lw-spin 70s linear infinite;
+}
+.logo-card {
+  position: absolute;
+  left: calc(var(--lw-card-w) / -2);
+  top: calc(var(--lw-card-h) / -2);
+  width: var(--lw-card-w);
+  height: var(--lw-card-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  transform: rotateY(var(--ry)) translateZ(var(--lw-radius));
+}
+.logo-card img {
+  max-width: 62%;
+  max-height: 54%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.35));
+  animation: lw-bob 2.6s ease-in-out var(--bob-delay, 0s) infinite alternate;
+}
+/* edge fades so cards enter and leave softly (same navy as the band) */
+.logo-stage::before,
+.logo-stage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16%;
+  z-index: 2;
+  pointer-events: none;
+}
+.logo-stage::before { left: 0; background: linear-gradient(90deg, var(--dark), rgba(21, 44, 66, 0)); }
+.logo-stage::after { right: 0; background: linear-gradient(270deg, var(--dark), rgba(21, 44, 66, 0)); }
+
+@keyframes lw-spin { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
+@keyframes lw-bob { from { transform: translateY(-7px); } to { transform: translateY(7px); } }
+
+@media (max-width: 52rem) {
+  .logo-wall { --lw-radius: 430px; --lw-card-w: 200px; --lw-card-h: 130px; }
+  .logo-stage { height: 220px; }
+}
+
+/* Reduced motion: a still, wrapped grid of the same logos */
+@media (prefers-reduced-motion: reduce) {
+  .logo-stage { height: auto; perspective: none; padding: 1rem 0; }
+  .logo-stage::before, .logo-stage::after { display: none; }
+  .logo-ring {
+    position: static;
+    animation: none;
+    transform: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem 2.5rem;
+  }
+  .logo-card { position: static; transform: none; width: 9rem; height: 4.5rem; }
+  .logo-card img { animation: none; max-width: 100%; max-height: 100%; }
+}
+
 /* ---------- Footer ---------- */
 
 .site-footer {
