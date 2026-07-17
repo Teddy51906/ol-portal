@@ -1,17 +1,20 @@
 /* i2 Leadership — style.css
-   Display: Fraunces · Body: Public Sans
-   Accent token: --accent (#B23A26) — the only brand color on the site. */
+   Display: Fraunces · Body: Public Sans · Brand lockup: Archivo Black
+   Accent token: --accent (brand navy from the i2 logo); --gold is the
+   logo starburst and is decorative only (never body text on paper). */
 
 :root {
   --paper: #FAF7F2;
-  --ink: #211D1A;
-  --ink-soft: #5C5550;
-  --accent: #B23A26;            /* 5.6:1 on paper, 6:1 under white text */
-  --accent-on-dark: #E8896F;    /* 6.3:1 on --dark */
-  --dark: #26211D;
-  --hairline: rgba(33, 29, 26, 0.16);
+  --ink: #1F242B;
+  --ink-soft: #525A64;
+  --accent: #1D4C7C;            /* brand navy — 8.3:1 on paper, 8.8:1 under white text */
+  --accent-on-dark: #F0B02E;    /* brand gold — 7.5:1 on --dark */
+  --gold: #E8A81E;              /* starburst rays, decorative */
+  --dark: #152C42;
+  --hairline: rgba(31, 36, 43, 0.16);
   --display: "Fraunces", "Iowan Old Style", Georgia, serif;
   --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --brand: "Archivo Black", "Arial Black", "Helvetica Neue", sans-serif;
   --wrap: 68rem;
   --space-section: 6rem;        /* ~96px between sections */
   --space-group: 1rem;          /* tight rhythm inside groups */
@@ -113,23 +116,34 @@ a:hover { text-decoration-thickness: 2px; }
   gap: 2rem;
   padding-block: 1.1rem;
 }
-.wordmark {
-  font-family: var(--display);
-  font-weight: 640;
-  font-size: 1.3rem;
-  color: var(--ink);
-  text-decoration: none;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-.wordmark sup {
-  color: var(--accent);
-  font-style: italic;
-  font-size: 0.72em;
-  top: -0.5em;
+/* Brand lockup — live-text recreation of the i2 Leadership logo:
+   heavy navy wordmark with the gold starburst over the "i". */
+.brand {
   position: relative;
-  line-height: 0;
+  z-index: 0;                   /* own stacking context so the star can sit behind the text */
+  display: inline-block;
+  font-family: var(--brand);
+  font-weight: 400;             /* Archivo Black is a single heavy weight */
+  font-size: 1.02rem;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+  margin: 0;
 }
+.brand .caps { text-transform: uppercase; }
+.brand-star {
+  position: absolute;
+  z-index: -1;                  /* rays pass behind the "i2", like the logo */
+  width: 2.1em;
+  height: 2.1em;
+  left: -0.85em;
+  top: -0.8em;
+  pointer-events: none;
+}
+.brand--big { font-size: clamp(1.5rem, 5.5vw, 2.3rem); }
+.site-footer .brand { color: var(--paper); }
 
 .site-nav { margin-left: auto; }
 .site-nav > ul {
@@ -413,6 +427,28 @@ a:hover { text-decoration-thickness: 2px; }
 .person h3 { margin-bottom: 0.1rem; }
 .person .role { color: var(--ink-soft); font-size: 0.95rem; margin-bottom: 0.8rem; }
 
+.person--laura {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  gap: 2rem 3.5rem;
+  align-items: start;
+}
+.person--laura figure { margin: 0; }
+.person--laura img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+@media (max-width: 46rem) {
+  .person--laura { grid-template-columns: 1fr; }
+  .person--laura figure { max-width: 20rem; }
+}
+/* Until assets/img/laura.jpg exists, collapse back to a single column */
+.person--laura.no-photo { display: block; max-width: 46rem; }
+.person--laura.no-photo figure { display: none; }
+
 .affiliates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
@@ -491,7 +527,6 @@ a:hover { text-decoration-thickness: 2px; }
   gap: 2.5rem 3rem;
 }
 @media (max-width: 46rem) { .footer-grid { grid-template-columns: 1fr; } }
-.site-footer .wordmark { color: var(--paper); }
 .site-footer p { color: rgba(250, 247, 242, 0.78); }
 .site-footer a { color: var(--accent-on-dark); }
 .site-footer h4 {

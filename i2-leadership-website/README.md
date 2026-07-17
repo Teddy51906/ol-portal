@@ -39,9 +39,15 @@ or a custom domain.
   constant, `BOOKING_URL`, at the top of `assets/js/site.js` (the same URL is
   also in each button's `href` for no-JS visitors). Replace it in `site.js` and
   find-and-replace the old URL across the `.html` files.
-- **Laura's updated photo** — save as `assets/img/laura.jpg`; a ready-to-use
-  `<figure>` snippet is in a comment at the top of the Laura section in
-  `team.html`.
+- **Laura's updated photo** — add the file as `assets/img/laura.jpg` (on
+  GitHub: *Add file → Upload files*, drag the photo in, name/path
+  `assets/img/laura.jpg`). The Meet the Team page already has the slot wired
+  and keeps it hidden until the file exists — no code change needed.
+- **Logo artwork** — the header/footer wordmark is a live-text recreation of
+  the i2 Leadership logo (Archivo Black + gold starburst SVG), which stays
+  crisp at any size. To use the original logo file instead, add it as
+  `assets/img/logo.png` and replace the `.brand` lockup markup in each page's
+  header with `<img src="assets/img/logo.png" alt="i2 Leadership" height="40">`.
 - **Season 5 episode links** — guests are listed on `podcast.html`; add
   per-episode URLs if you want each name to link to its episode.
 
@@ -49,9 +55,12 @@ or a custom domain.
 
 - Type: [Fraunces](https://fonts.google.com/specimen/Fraunces) for display,
   [Public Sans](https://fonts.google.com/specimen/Public+Sans) for body
-  (16px / 1.6).
-- One accent color as a semantic token: `--accent: #B23A26` (≥4.5:1 contrast
-  on the paper background and under white button text).
+  (16px / 1.6), [Archivo Black](https://fonts.google.com/specimen/Archivo+Black)
+  for the brand lockup only.
+- Brand colors from the i2 Leadership logo: `--accent: #1D4C7C` (navy — 8.3:1
+  on the paper background, 8.8:1 under white button text) with the gold
+  starburst `#E8A81E`/`#F0B02E` reserved for decoration and text on the dark
+  navy bands.
 - Sections sit ~96px apart (`--space-section`); groups keep tight gaps.
 - Animations touch only `transform` and `opacity`, ease-out, and respect
   `prefers-reduced-motion`.
