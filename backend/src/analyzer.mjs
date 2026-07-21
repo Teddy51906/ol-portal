@@ -91,9 +91,10 @@ export const handler = async event => {
       await setStatus(id, { status: "Analyzing" });
       const c = await client();
       const response = await c.messages.create({
-        model: "claude-opus-4-8",
+        // Haiku: classification + summary doesn't need Opus (and Haiku 4.5
+        // doesn't support adaptive thinking, so no thinking param).
+        model: "claude-haiku-4-5",
         max_tokens: 8192,
-        thinking: { type: "adaptive" },
         system: "You analyze business documents for Optimistic Labs' internal portal (a consultancy running deals, proposals, and invoices across several practice labs). Be factual and specific; pull real names, amounts, and dates from the document.",
         output_config: { format: { type: "json_schema", schema: ANALYSIS_SCHEMA } },
         messages: [{

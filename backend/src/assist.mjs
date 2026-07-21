@@ -143,7 +143,7 @@ export async function assist(ctx, body) {
 
   const c = await client();
   const response = await c.messages.create({
-    model: "claude-opus-4-8",
+    model: "claude-sonnet-5",
     max_tokens: 6000,
     thinking: { type: "adaptive" },
     system: `You are The Optimist, Optimistic Labs' proposal writer, chatting with a Lab Leader inside OL's internal portal. The conversation with you IS the proposal editor: everything in the document gets written through you, and the Lab Leader watches it form in a live preview beside the chat.
